@@ -38,6 +38,7 @@ import com.google.ar.core.Camera;
 import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.augmentedimage.rendering.AugmentedImageRenderer;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
@@ -113,9 +114,6 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
 
     fitToScanView = findViewById(R.id.image_view_fit_to_scan);
     glideRequestManager = Glide.with(this);
-    glideRequestManager
-        .load(Uri.parse("file:///android_asset/fit_to_scan.png"))
-        .into(fitToScanView);
 
     installRequested = false;
   }
@@ -308,20 +306,11 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
         case PAUSED:
           // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
           // but not yet tracked.
-          String text = String.format("Detected Image %d", augmentedImage.getIndex());
+          String text = String.format("Detected %s", augmentedImage.getName());
           messageSnackbarHelper.showMessage(this, text);
           break;
 
         case TRACKING:
-          // Have to switch to UI Thread to update View.
-          this.runOnUiThread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  fitToScanView.setVisibility(View.GONE);
-                }
-              });
-
           // Create a new anchor for newly found images.
           if (!augmentedImageMap.containsKey(augmentedImage.getIndex())) {
             Anchor centerPoseAnchor = augmentedImage.createAnchor(augmentedImage.getCenterPose());
@@ -350,7 +339,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
           break;
         default:
           break;
-      }
+    }
     }
   }
 
@@ -378,7 +367,7 @@ public class AugmentedImageActivity extends AppCompatActivity implements GLSurfa
     } else {
       // This is an alternative way to initialize an AugmentedImageDatabase instance,
       // load a pre-existing augmented image database.
-      try (InputStream is = getAssets().open("sample_database.imgdb")) {
+      try (InputStream is = getAssets().open("myimages.imgdb")) {
         augmentedImageDatabase = AugmentedImageDatabase.deserialize(session, is);
       } catch (IOException e) {
         Log.e(TAG, "IO exception loading augmented image database.", e);

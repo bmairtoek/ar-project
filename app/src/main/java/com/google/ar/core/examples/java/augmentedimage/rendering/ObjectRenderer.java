@@ -118,24 +118,27 @@ public class ObjectRenderer {
    */
   public void createOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName)
       throws IOException {
-    // Read the texture.
-    Bitmap textureBitmap =
-        BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
+    if(diffuseTextureAssetName != null) {
+      // Read the texture.
+      Bitmap textureBitmap =
+              BitmapFactory.decodeStream(context.getAssets().open(diffuseTextureAssetName));
 
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glGenTextures(textures.length, textures, 0);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+      GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+      GLES20.glGenTextures(textures.length, textures, 0);
+      GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
 
-    GLES20.glTexParameteri(
-        GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
-    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0);
-    GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+      GLES20.glTexParameteri(
+              GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+      GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+      GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, textureBitmap, 0);
+      GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+      GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
 
-    textureBitmap.recycle();
+      textureBitmap.recycle();
 
-    ShaderUtil.checkGLError(TAG, "Texture loading");
+      ShaderUtil.checkGLError(TAG, "Texture loading");
+    }
+
 
     // Read the obj file.
     InputStream objInputStream = context.getAssets().open(objAssetName);

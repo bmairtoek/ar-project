@@ -32,88 +32,36 @@ public class AugmentedImageRenderer {
     0x009688, 0x4CAF50, 0x8BC34A, 0xCDDC39, 0xFFEB3B, 0xFFC107, 0xFF9800,
   };
 
-  private final ObjectRenderer imageFrameUpperLeft = new ObjectRenderer();
-  private final ObjectRenderer imageFrameUpperRight = new ObjectRenderer();
-  private final ObjectRenderer imageFrameLowerLeft = new ObjectRenderer();
-  private final ObjectRenderer imageFrameLowerRight = new ObjectRenderer();
+  private final ObjectRenderer objectRenderer = new ObjectRenderer();
 
   public AugmentedImageRenderer() {}
 
   public void createOnGlThread(Context context) throws IOException {
 
-    imageFrameUpperLeft.createOnGlThread(
-        context, "models/frame_upper_left.obj", "models/frame_base.png");
-    imageFrameUpperLeft.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
-    imageFrameUpperLeft.setBlendMode(BlendMode.SourceAlpha);
-
-    imageFrameUpperRight.createOnGlThread(
-        context, "models/frame_upper_right.obj", "models/frame_base.png");
-    imageFrameUpperRight.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
-    imageFrameUpperRight.setBlendMode(BlendMode.SourceAlpha);
-
-    imageFrameLowerLeft.createOnGlThread(
-        context, "models/frame_lower_left.obj", "models/frame_base.png");
-    imageFrameLowerLeft.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
-    imageFrameLowerLeft.setBlendMode(BlendMode.SourceAlpha);
-
-    imageFrameLowerRight.createOnGlThread(
-        context, "models/frame_lower_right.obj", "models/frame_base.png");
-    imageFrameLowerRight.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
-    imageFrameLowerRight.setBlendMode(BlendMode.SourceAlpha);
+    objectRenderer.createOnGlThread(
+      context, "cottage_obj.obj", null);
+//      context, "models/frame_upper_left.obj", null);
+    objectRenderer.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
+    objectRenderer.setBlendMode(BlendMode.SourceAlpha);
   }
 
   public void draw(
-      float[] viewMatrix,
-      float[] projectionMatrix,
-      AugmentedImage augmentedImage,
-      Anchor centerAnchor,
-      float[] colorCorrectionRgba) {
+    float[] viewMatrix,
+    float[] projectionMatrix,
+    AugmentedImage augmentedImage,
+    Anchor centerAnchor,
+    float[] colorCorrectionRgba) {
     float[] tintColor =
-        convertHexToColor(TINT_COLORS_HEX[augmentedImage.getIndex() % TINT_COLORS_HEX.length]);
+      convertHexToColor(TINT_COLORS_HEX[augmentedImage.getIndex() % TINT_COLORS_HEX.length]);
 
-    Pose[] localBoundaryPoses = {
-      Pose.makeTranslation(
-          -0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          -0.5f * augmentedImage.getExtentZ()), // upper left
-      Pose.makeTranslation(
-          0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          -0.5f * augmentedImage.getExtentZ()), // upper right
-      Pose.makeTranslation(
-          0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          0.5f * augmentedImage.getExtentZ()), // lower right
-      Pose.makeTranslation(
-          -0.5f * augmentedImage.getExtentX(),
-          0.0f,
-          0.5f * augmentedImage.getExtentZ()) // lower left
-    };
+    Pose worldBoundaryPoses = centerAnchor.getPose();
 
-    Pose anchorPose = centerAnchor.getPose();
-    Pose[] worldBoundaryPoses = new Pose[4];
-    for (int i = 0; i < 4; ++i) {
-      worldBoundaryPoses[i] = anchorPose.compose(localBoundaryPoses[i]);
-    }
-
-    float scaleFactor = 1.0f;
+    float scaleFactor = 0.01f;
     float[] modelMatrix = new float[16];
 
-    worldBoundaryPoses[0].toMatrix(modelMatrix, 0);
-    imageFrameUpperLeft.updateModelMatrix(modelMatrix, scaleFactor);
-    imageFrameUpperLeft.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
-
-    worldBoundaryPoses[1].toMatrix(modelMatrix, 0);
-    imageFrameUpperRight.updateModelMatrix(modelMatrix, scaleFactor);
-    imageFrameUpperRight.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
-
-    worldBoundaryPoses[2].toMatrix(modelMatrix, 0);
-    imageFrameLowerRight.updateModelMatrix(modelMatrix, scaleFactor);
-    imageFrameLowerRight.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
-
-    worldBoundaryPoses[3].toMatrix(modelMatrix, 0);
-    imageFrameLowerLeft.updateModelMatrix(modelMatrix, scaleFactor);
-    imageFrameLowerLeft.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
+    worldBoundaryPoses.toMatrix(modelMatrix, 0);
+    objectRenderer.updateModelMatrix(modelMatrix, scaleFactor);
+    objectRenderer.draw(viewMatrix, projectionMatrix, colorCorrectionRgba, tintColor);
   }
 
   private static float[] convertHexToColor(int colorHex) {
