@@ -39,7 +39,7 @@ public class AugmentedImageRenderer {
   public void createOnGlThread(Context context) throws IOException {
 
     objectRenderer.createOnGlThread(
-      context, "cottage_obj.obj", null);
+      context, "palac.obj", null);
 //      context, "models/frame_upper_left.obj", null);
     objectRenderer.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
     objectRenderer.setBlendMode(BlendMode.SourceAlpha);
@@ -56,7 +56,7 @@ public class AugmentedImageRenderer {
 
     Pose worldBoundaryPoses = centerAnchor.getPose();
 
-    float scaleFactor = 0.01f;
+    float scaleFactor = 0.001f;
     float[] modelMatrix = new float[16];
 
     worldBoundaryPoses.toMatrix(modelMatrix, 0);
