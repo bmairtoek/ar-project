@@ -18,7 +18,6 @@ import android.app.Activity;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.view.View;
-import android.widget.TextView;
 
 /**
  * Helper to manage the sample snackbar. Hides the Android boilerplate code, and exposes simpler
@@ -28,9 +27,6 @@ public final class SnackbarHelper {
   private static final int BACKGROUND_COLOR = 0xbf323232;
   private Snackbar messageSnackbar;
   private enum DismissBehavior { HIDE, SHOW, FINISH };
-  private int maxLines = 2;
-  private String lastMessage = "";
-  private View snackbarView;
 
   public boolean isShowing() {
     return messageSnackbar != null;
@@ -38,10 +34,7 @@ public final class SnackbarHelper {
 
   /** Shows a snackbar with a given message. */
   public void showMessage(Activity activity, String message) {
-    if (!message.isEmpty() && (!isShowing() || !lastMessage.equals(message))) {
-      lastMessage = message;
-      show(activity, message, DismissBehavior.HIDE);
-    }
+    show(activity, message, DismissBehavior.HIDE);
   }
 
   /** Shows a snackbar with a given message, and a dismiss button. */
@@ -62,37 +55,16 @@ public final class SnackbarHelper {
    * call even if snackbar is not shown.
    */
   public void hide(Activity activity) {
-    if (!isShowing()) {
-      return;
-    }
-    lastMessage = "";
-    Snackbar messageSnackbarToHide = messageSnackbar;
-    messageSnackbar = null;
     activity.runOnUiThread(
         new Runnable() {
           @Override
           public void run() {
-            messageSnackbarToHide.dismiss();
+            if (messageSnackbar != null) {
+              messageSnackbar.dismiss();
+            }
+            messageSnackbar = null;
           }
         });
-  }
-
-  public void setMaxLines(int lines) {
-    maxLines = lines;
-  }
-
-  /**
-   * Sets the view that will be used to find a suitable parent view to hold the Snackbar view.
-   *
-   * <p>To use the root layout ({@link android.R.id.content}), pass in {@code null}.
-   *
-   * @param snackbarView the view to pass to {@link
-   *     com.google.android.material.snackbar.Snackbar#make(…)} which will be used to find a
-   *     suitable parent, which is a {@link androidx.coordinatorlayout.widget.CoordinatorLayout}, or
-   *     the window decor's content view, whichever comes first.
-   */
-  public void setParentView(View snackbarView) {
-    this.snackbarView = snackbarView;
   }
 
   private void show(
@@ -103,9 +75,7 @@ public final class SnackbarHelper {
           public void run() {
             messageSnackbar =
                 Snackbar.make(
-                    snackbarView == null
-                        ? activity.findViewById(android.R.id.content)
-                        : snackbarView,
+                    activity.findViewById(android.R.id.content),
                     message,
                     Snackbar.LENGTH_INDEFINITE);
             messageSnackbar.getView().setBackgroundColor(BACKGROUND_COLOR);
@@ -129,11 +99,6 @@ public final class SnackbarHelper {
                     });
               }
             }
-            ((TextView)
-                    messageSnackbar
-                        .getView()
-                        .findViewById(android.support.design.R.id.snackbar_text))
-                .setMaxLines(maxLines);
             messageSnackbar.show();
           }
         });
